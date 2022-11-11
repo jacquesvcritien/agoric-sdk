@@ -13,6 +13,7 @@ SDK=$(readlink -f "$(dirname -- "$(readlink -f -- "$0")")/../../..")
 export CHAIN_BOOTSTRAP_VAT_CONFIG="$SDK/packages/inter-protocol/scripts/start-local-chain-config.json"
 
 WALLET=$1
+WALLET_BECH32=$2
 
 if [ -z "$WALLET" ]; then
     echo "USAGE: $0 wallet-key"
@@ -20,7 +21,7 @@ if [ -z "$WALLET" ]; then
     exit 1
 fi
 
-WALLET_BECH32=$(agd keys show "$WALLET" --output json | jq -r .address)
+#WALLET_BECH32=$(agd keys show "$WALLET" --keyring-backend test --output json | jq -r .address)
 
 # xxx this would be more robust using `jq`
 # grant econ governance
@@ -52,9 +53,9 @@ make ACCT_ADDR="$WALLET_BECH32" FUNDS=20000000ubld,20000000ibc/usdc1234 fund-acc
 agd query bank balances "$WALLET_BECH32" | grep ubld || exit 1
 
 echo "Provisioning your smart wallet..."
-agoric wallet provision --spend --account "$WALLET"
+agoric wallet provision --spend --account "$WALLET_BECH32" --keyring-backend test
 echo "waiting for blocks"
 sleep 15
 # verify
-agoric wallet list
-agoric wallet show --from "$WALLET"
+agoric wallet list 
+agoric wallet show --from "$WALLET" 
