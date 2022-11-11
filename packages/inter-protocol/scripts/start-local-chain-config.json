@@ -21,13 +21,10 @@
                     }
                 ],
                 "economicCommitteeAddresses": {
-                    "voter": "agoric1chxpyq88g9vhv7lkje3ap8yexajmwkq66fyfhq"
+                    "voter": "agoric1ersatz"
                 },
                 "demoOracleAddresses": [
-                    "agoric1chxpyq88g9vhv7lkje3ap8yexajmwkq66fyfhq",
-		    "agoric18kg24ay4e5atq0t7mery39g34lqxww073uapqm",
-		    "agoric16aamryuh6zfx6uahypv32awnusyzanry7elfma",
-		    "agoric17emrtgjww7w6fy64405nwy0dc6rmc9ut5m0j0x"
+                    "agoric1ersatz"
                 ]
             },
             "creationOptions": {
