@@ -25,10 +25,10 @@ fi
 
 # xxx this would be more robust using `jq`
 # grant econ governance
-sed -i '' "s/\"voter\":.*/\"voter\": \"$WALLET_BECH32\"/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
+#sed -i '' "s/\"voter\":.*/\"voter\": \"$WALLET_BECH32\"/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
 # grant same key the priviledge of operating the demo oracle
 # NB this assumes the current value, so won't update any others
-sed -i '' "s/agoric1ersatz/$WALLET_BECH32/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
+#sed -i '' "s/agoric1ersatz/$WALLET_BECH32/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
 
 echo CHAIN_LOG $CHAIN_LOG
 echo SDK "$SDK"
@@ -49,7 +49,7 @@ make fund-provision-pool
 echo "Funding your wallet account..."
 # After `fund-provision-pool` there is 900 IST remaining for other account funding.
 # A wallet can be tested with 20 BLD for provisioning wallet and 20 USDC for psm trading
-make ACCT_ADDR="$WALLET_BECH32" FUNDS=20000000ubld,20000000ibc/usdc1234 fund-acct
+make ACCT_ADDR="$WALLET_BECH32" FUNDS=20000000ubld,20000000ibc/usdc1234,50000000uist fund-acct
 agd query bank balances "$WALLET_BECH32" | grep ubld || exit 1
 
 echo "Provisioning your smart wallet..."
@@ -57,5 +57,5 @@ agoric wallet provision --spend --account "$WALLET_BECH32" --keyring-backend tes
 echo "waiting for blocks"
 sleep 15
 # verify
-agoric wallet list 
-agoric wallet show --from "$WALLET" 
+agoric wallet list --keyring-backend test
+agoric wallet show --from "$WALLET_BECH32" 
