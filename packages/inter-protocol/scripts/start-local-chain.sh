@@ -13,7 +13,6 @@ SDK=$(readlink -f "$(dirname -- "$(readlink -f -- "$0")")/../../..")
 export CHAIN_BOOTSTRAP_VAT_CONFIG="$SDK/packages/inter-protocol/scripts/start-local-chain-config.json"
 
 WALLET=$1
-WALLET_BECH32=$2
 
 if [ -z "$WALLET" ]; then
     echo "USAGE: $0 wallet-key"
@@ -21,7 +20,7 @@ if [ -z "$WALLET" ]; then
     exit 1
 fi
 
-#WALLET_BECH32=$(agd keys show "$WALLET" --keyring-backend test --output json | jq -r .address)
+WALLET_BECH32=$(agd keys show "$WALLET" --keyring-backend test --output json | jq -r .address)
 
 # xxx this would be more robust using `jq`
 # grant econ governance
