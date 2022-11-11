@@ -22,12 +22,11 @@ fi
 
 WALLET_BECH32=$(agd keys show "$WALLET" --keyring-backend test --output json | jq -r .address)
 
+echo "Replacing addresses in config"
 # xxx this would be more robust using `jq`
-# grant econ governance
-#sed -i '' "s/\"voter\":.*/\"voter\": \"$WALLET_BECH32\"/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
 # grant same key the priviledge of operating the demo oracle
 # NB this assumes the current value, so won't update any others
-#sed -i '' "s/agoric1ersatz/$WALLET_BECH32/" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
+sed -i "s/agoric1ersatz/$WALLET_BECH32/g" "$CHAIN_BOOTSTRAP_VAT_CONFIG"
 
 echo CHAIN_LOG $CHAIN_LOG
 echo SDK "$SDK"
