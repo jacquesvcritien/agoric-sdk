@@ -65,3 +65,6 @@ dist
 /packages.png
 
 chaintest
+
+#middleware's state
+packages/agoric-cl-middleware/src/state.json
