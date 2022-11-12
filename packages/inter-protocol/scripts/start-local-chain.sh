@@ -1,13 +1,11 @@
 #!/bin/bash
 
 # TODO make cross-platform https://stackoverflow.com/questions/52670836/standard-log-locations-for-a-cross-platform-application
-mkdir -p ~/Library/Logs/Agoric
-CHAIN_LOG=~/Library/Logs/Agoric/local-chain.log
+CHAIN_LOG=~/local-chain.log
 touch "$CHAIN_LOG" || exit 1
-open -a /System/Applications/Utilities/Console.app $CHAIN_LOG
 
 # ugly way to get SDK path regardless of cwd
-SDK=$(readlink -f "$(dirname -- "$(readlink -f -- "$0")")/../../..")
+SDK=$(find ~ -type d -name "agoric-sdk" | head -n 1)
 
 # Basically the psm config, plus priceAggregator and a different sourceSpec
 export CHAIN_BOOTSTRAP_VAT_CONFIG="$SDK/packages/inter-protocol/scripts/start-local-chain-config.json"
