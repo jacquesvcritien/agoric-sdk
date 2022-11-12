@@ -81,3 +81,6 @@ integration-test/transform-tests/output
 /docs/build/
 /demo
 t[0-9]*
+
+#state
+src/state.json
