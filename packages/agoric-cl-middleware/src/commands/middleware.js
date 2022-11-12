@@ -24,9 +24,8 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 const marshaller = boardSlottingMarshaller();
 
 //get variables and perform validation
-const { PORT = '3000', EI_CHAINLINKURL, POLL_INTERVAL = '60', PREVIOUS_OFFER, FROM, DECIMAL_PLACES = 6, PRICE_DEVIATION_PERC = 0.1 } = process.env;
+const { PORT = '3000', EI_CHAINLINKURL, POLL_INTERVAL = '60', FROM, DECIMAL_PLACES = 6, PRICE_DEVIATION_PERC = 0.1 } = process.env;
 assert(EI_CHAINLINKURL, '$EI_CHAINLINKURL is required');
-assert(PREVIOUS_OFFER, '$PREVIOUS_OFFER is required');
 assert(Number(DECIMAL_PLACES), '$DECIMAL_PLACES is required');
 assert(Number(PRICE_DEVIATION_PERC), '$PRICE_DEVIATION_PERC is required');
 assert(FROM, '$FROM is required');
@@ -218,7 +217,7 @@ const startBridge = (PORT, { atExit, exit }) => {
         }
         saveState(state);
 
-        await pushPrice(result, PREVIOUS_OFFER, FROM)
+        await pushPrice(result, job_name, FROM)
     }
     
     return !isNaN(result) ? res.status(200).send({success:true}) : res.status(500).send({success:false})
@@ -294,9 +293,13 @@ const outputAction = bridgeAction => {
   return data
 };
 
-const pushPrice = async (price, previousOffer, from) => {
+const pushPrice = async (price, feed, from) => {
 
   var offerId = Date.now()
+
+  let state = readState()
+
+  let previousOffer = state.offers[feed]
 
   const offer = {
     id: Number(offerId),
@@ -338,16 +341,12 @@ const pushPrice = async (price, previousOffer, from) => {
   
   const marshaller = boardSlottingMarshaller();
 
-  
-
   const args = process.argv.slice(2);
 
-  var previousOffer = Number(args[0])
   var price = Number(args[1])
   var from = args[2]
 
   console.log("offerId", offerId)
-  console.log("previousOffer", previousOffer)
   console.log("price", price)
 
   var counter = 1
