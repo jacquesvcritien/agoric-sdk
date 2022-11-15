@@ -59,6 +59,7 @@
     "esm": "agoric-labs/esm#Agoric-built",
     "inquirer": "^8.2.2",
     "opener": "^1.5.2",
+    "prom-client": "^14.1.0",
     "tmp": "^0.2.1",
     "ws": "^7.2.0"
   },
