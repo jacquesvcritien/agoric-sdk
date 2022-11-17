@@ -38,9 +38,25 @@ const oracleObservation = new Gauge({
     labelNames: ['oracle', 'feed']
   })
 
+//Create gauge for price deviation
+const oracleDeviation = new Gauge({
+    name: 'oracle_price_deviation',
+    help: 'Latest price deviation by oracle',
+    labelNames: ['oracle', 'feed']
+  })
+  
+//Create gauge for balance
+const oracleBalance = new Gauge({
+    name: 'oracle_balance',
+    help: 'Oracle balances',
+    labelNames: ['oracle', 'brand']
+  })
+
 // Register the gaugex
 register.registerMetric(oracleSubmission)
 register.registerMetric(oracleObservation)
+register.registerMetric(oracleBalance)
+register.registerMetric(oracleDeviation)
 
 const { agoricNames, fromBoard, vstorage } = await makeRpcUtils({ fetch });
 
@@ -65,10 +81,29 @@ const readOracleAddresses = () => {
 
 var oracles = readOracleAddresses();
 
-const updateMetrics = (oracle, feed, value, id) => {
+const updateMetrics = (oracle, feed, value, id, price_deviation) => {
     oracleSubmission.labels(oracle, feed).set(value)
     oracleObservation.labels(oracle, feed).set(id)
+    oracleDeviation.labels(oracle, feed).set(price_deviation)
 }
+
+const updateBalanceMetrics = (oracle, brand, value) => {
+    oracleBalance.labels(oracle, brand).set(value)
+}
+
+const queryPrice = async (job_name) => {
+    const capDataStr = await vstorage.readLatest(
+      `published.priceFeed.${job_name}_price_feed`,
+    );
+  
+    var capData = JSON.parse(JSON.parse(capDataStr).value)
+    capData = JSON.parse(capData.values[0])
+    capData = JSON.parse(capData.body.replaceAll("\\", "")).quoteAmount.value[0]
+    
+    var latest_price = Number(capData.amountOut.value.digits) / Number(capData.amountIn.value.digits)
+    console.log(job_name+ " Price Query: "+ String(latest_price))
+    return latest_price
+  }
 
 export const getLatestPrices = async (oracle, feeds, last_index) => {
 
@@ -88,6 +123,9 @@ export const getLatestPrices = async (oracle, feeds, last_index) => {
     );
     const coalesced = await coalesceWalletState(follower);
     let offers = Array.from(coalesced.offerStatuses.values());
+    let balances = Array.from(coalesced.balances.values());
+
+    console.log("balances", balances)
 
     let last_results = {
         "last_index": last_index,
@@ -99,15 +137,33 @@ export const getLatestPrices = async (oracle, feeds, last_index) => {
     for (var i=last_index; i<offers.length; i++){
         var current_offer = offers[i];
         last_results["last_index"] = i;
-        let feed = feeds[current_offer["invitationSpec"]["previousOffer"]]
-        let price = Number(current_offer["invitationSpec"]["invitationArgs"])
-        let id = Number(current_offer["id"])
-        last_results["values"][feed] = {
-            price: price,
-            id: id
+
+        if (current_offer["invitationSpec"]["invitationMakerName"] == "makePushPriceInvitation"){
+            let feed = feeds[current_offer["invitationSpec"]["previousOffer"]]
+            let price = Number(current_offer["invitationSpec"]["invitationArgs"])
+            let id = Number(current_offer["id"])
+            last_results["values"][feed] = {
+                price: price,
+                id: id
+            }
+            console.log(last_results["values"][feed])
+            let feed_price = await queryPrice(feed)
+            let price_dev = Math.abs((price - feed_price)/feed_price)*100
+            updateMetrics(oracle, feed, price, id, price_dev)
         }
-        updateMetrics(oracle, feed, price, id)
     }
+
+    //loop through balances
+    for (var i=0; i < balances.length; i++){
+        let current_balance = balances[i]
+        var brand = current_balance.brand.iface.split(" ")[1]
+        if (brand.includes("BLD") || brand.includes("IST")){
+            var value = Number(current_balance.value)
+            console.log(oracle, brand, value)
+            updateBalanceMetrics(oracle, brand, value)
+        }
+    }
+
     return last_results
 }
 
