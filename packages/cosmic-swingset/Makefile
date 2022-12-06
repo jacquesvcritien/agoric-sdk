@@ -134,6 +134,7 @@ scenario2-setup-nobuild:
 	mv t1/n0/config/genesis2.json t1/n0/config/genesis.json
 	$(MAKE) set-local-gci-ingress
 	sed -i 's/pruning = "custom"/pruning = "nothing"/' t1/n0/config/app.toml        
+        sed -i 's/addr_book_strict = true/addr_book_strict = false/' t1/n0/config/config.toml
 
 t1/decentral-economy-config.json: $(ECONOMY_PROPOSALS)
 	jq -s '.[0] * { coreProposals: .[1] }' \
