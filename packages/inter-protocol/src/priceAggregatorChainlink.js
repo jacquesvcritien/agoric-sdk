@@ -233,8 +233,8 @@ const start = async (zcf, privateArgs) => {
       }
 
       /**
-     * @param {Amount} amountIn the given amountIn
-     */
+       * @param {Amount} amountIn the given amountIn
+       */
       const calcAmountOut = amountIn => {
         const valueIn = AmountMath.getValue(brandIn, amountIn);
         return AmountMath.make(
@@ -244,8 +244,8 @@ const start = async (zcf, privateArgs) => {
       };
 
       /**
-     * @param {Amount} amountOut the wanted amountOut
-     */
+       * @param {Amount} amountOut the wanted amountOut
+       */
       const calcAmountIn = amountOut => {
         const valueOut = AmountMath.getValue(brandOut, amountOut);
         return AmountMath.make(
@@ -438,8 +438,8 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- */
+   * @param {bigint} roundId
+   */
   const acceptingSubmissions = roundId => {
     return details.has(roundId) && details.get(roundId).maxSubmissions !== 0;
   };
@@ -532,7 +532,7 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
-  */
+   */
   const oracleCount = () => {
     return oracleStatuses.getSize();
   };
@@ -677,8 +677,8 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {string} oracleAddr
- */
+   * @param {string} oracleAddr
+   */
   const getStartingRound = oracleAddr => {
     const currentRound = reportingRoundId;
     if (
@@ -764,46 +764,46 @@ const start = async (zcf, privateArgs) => {
          * @param {PriceRound} result
          */
         async pushPrice({
-        roundId: roundIdRaw = undefined,
-        unitPrice: valueRaw,
+          roundId: roundIdRaw = undefined,
+          unitPrice: valueRaw,
         }) {
-        const value = Nat(valueRaw);
-      
-        value >= minSubmissionValue ||
-          Fail`value below minSubmissionValue ${q(minSubmissionValue)}`;
-        value <= maxSubmissionValue ||
-          Fail`value above maxSubmissionValue ${q(maxSubmissionValue)}`;
+          const value = Nat(valueRaw);
+        
+          value >= minSubmissionValue ||
+            Fail`value below minSubmissionValue ${q(minSubmissionValue)}`;
+          value <= maxSubmissionValue ||
+            Fail`value above maxSubmissionValue ${q(maxSubmissionValue)}`;
 
-        const blockTimestamp = await E(timer).getCurrentTimestamp();
+          const blockTimestamp = await E(timer).getCurrentTimestamp();
 
-        let roundId;
-        if (roundIdRaw === undefined) {
-          const suggestedRound = oracleRoundStateSuggestRound(
+          let roundId;
+          if (roundIdRaw === undefined) {
+            const suggestedRound = oracleRoundStateSuggestRound(
+              oracleAddr,
+              blockTimestamp,
+            );
+            roundId = suggestedRound.eligibleForSpecificRound
+              ? suggestedRound.queriedRoundId
+              : add(suggestedRound.queriedRoundId, 1);
+          } else {
+            roundId = Nat(roundIdRaw);
+          }
+
+          const errorMsg = validateOracleRound(
             oracleAddr,
+            roundId,
             blockTimestamp,
           );
-          roundId = suggestedRound.eligibleForSpecificRound
-            ? suggestedRound.queriedRoundId
-            : add(suggestedRound.queriedRoundId, 1);
-        } else {
-          roundId = Nat(roundIdRaw);
-        }
 
-        const errorMsg = validateOracleRound(
-          oracleAddr,
-          roundId,
-          blockTimestamp,
-        );
+          if (!(errorMsg === null)) {
+            assert.fail(errorMsg);
+          }
 
-        if (!(errorMsg === null)) {
-          assert.fail(errorMsg);
-        }
+          proposeNewRound(roundId, oracleAddr, blockTimestamp);
+          recordSubmission(value, roundId, oracleAddr)
 
-        proposeNewRound(roundId, oracleAddr, blockTimestamp);
-        recordSubmission(value, roundId, oracleAddr)
-
-        updateRoundAnswer(roundId, blockTimestamp);
-        deleteRoundDetails(roundId);
+          updateRoundAnswer(roundId, blockTimestamp);
+          deleteRoundDetails(roundId);
         },
       });
 
