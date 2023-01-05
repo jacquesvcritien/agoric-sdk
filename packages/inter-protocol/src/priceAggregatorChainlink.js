@@ -151,39 +151,39 @@ const start = async (zcf, privateArgs) => {
     );
 
   /**
- * @typedef {object} OracleStatus
- * @property {bigint} startingRound
- * @property {bigint} endingRound
- * @property {bigint} lastReportedRound
- * @property {bigint} lastStartedRound
- * @property {bigint} latestSubmission
- * @property {number} index
- */
+   * @typedef {object} OracleStatus
+   * @property {bigint} startingRound
+   * @property {bigint} endingRound
+   * @property {bigint} lastReportedRound
+   * @property {bigint} lastStartedRound
+   * @property {bigint} latestSubmission
+   * @property {number} index
+   */
   /** @type {MapStore<string, OracleStatus>} */
   const oracleStatuses = makeScalarBigMapStore('oracleStatus', {
     durable: true,
   });
 
   /**
- * @typedef {object} Round
- * @property {bigint} answer
- * @property {Timestamp} startedAt
- * @property {Timestamp} updatedAt
- * @property {bigint} answeredInRound
- */
+   * @typedef {object} Round
+   * @property {bigint} answer
+   * @property {Timestamp} startedAt
+   * @property {Timestamp} updatedAt
+   * @property {bigint} answeredInRound
+   */
   /** @type {MapStore<bigint, Round>} */
   const rounds = makeScalarBigMapStore('rounds', { durable: true });
 
   /**
- * @typedef {object} RoundDetails
- * @property {bigint[]} submissions
- * @property {String[]} submissionsBy
- * @property {number} maxSubmissions
- * @property {number} minSubmissions
- * @property {number} roundTimeout
- * @property {Timestamp} startedAt
- * @property {string} startedBy
- */
+   * @typedef {object} RoundDetails
+   * @property {bigint[]} submissions
+   * @property {String[]} submissionsBy
+   * @property {number} maxSubmissions
+   * @property {number} minSubmissions
+   * @property {number} roundTimeout
+   * @property {Timestamp} startedAt
+   * @property {string} startedBy
+   */
   /** @type {MapStore<bigint, RoundDetails>} */
   const details = makeScalarBigMapStore('details', { durable: true });
 
@@ -195,9 +195,9 @@ const start = async (zcf, privateArgs) => {
   // --- [end] Chainlink specific values
 
   /**
- *
- * @param {PriceQuoteValue} quote
- */
+   *
+   * @param {PriceQuoteValue} quote
+   */
   const authenticateQuote = async quote => {
     const quoteAmount = AmountMath.make(quoteKit.brand, harden(quote));
     const quotePayment = await E(quoteKit.mint).mintPayment(quoteAmount);
@@ -205,22 +205,22 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * This is just a signal that there's a new answer, which is read from `lastValueOutForUnitIn`
- *
- * @type {NotifierRecord<void>}
- */
+   * This is just a signal that there's a new answer, which is read from `lastValueOutForUnitIn`
+   *
+   * @type {NotifierRecord<void>}
+   */
   const { notifier: answerNotifier, updater: answerUpdator } =
     makeNotifierKit();
 
   /**
- * @param {object} param0
- * @param {number} [param0.overrideValueOut]
- * @param {Timestamp} [param0.timestamp]
- */
+   * @param {object} param0
+   * @param {number} [param0.overrideValueOut]
+   * @param {Timestamp} [param0.timestamp]
+   */
   const makeCreateQuote = ({ overrideValueOut, timestamp } = {}) =>
     /**
-   * @param {PriceQuery} priceQuery
-   */
+     * @param {PriceQuery} priceQuery
+     */
     function createQuote(priceQuery) {
       // Sniff the current baseValueOut.
       const valueOutForUnitIn =
@@ -308,9 +308,9 @@ const start = async (zcf, privateArgs) => {
   });
 
   /**
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- */
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   */
   const timedOut = (roundId, blockTimestamp) => {
     if (!details.has(roundId) || !rounds.has(roundId)) {
       return false;
@@ -334,9 +334,9 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- */
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   */
   const updateTimedOutRoundInfo = (roundId, blockTimestamp) => {
     // round 0 is non-existent, so we avoid that case -- round 1 is ignored
     // because we can't copy from round 0 in that case
@@ -361,8 +361,8 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- */
+   * @param {bigint} roundId
+   */
   const newRound = roundId => {
     let createRound = roundId === add(reportingRoundId, 1)
     console.log("creating new round", roundId, createRound)
@@ -370,10 +370,10 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- * @param {string} oracleAddr
- */
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   * @param {string} oracleAddr
+   */
   const initializeNewRound = (roundId, blockTimestamp, oracleAddr) => {
     newRound(roundId) || Fail`Round ${roundId} already started`;
 
@@ -417,10 +417,10 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- * @param {string} oracleAddr
- * @param {Timestamp} blockTimestamp
- */
+   * @param {bigint} roundId
+   * @param {string} oracleAddr
+   * @param {Timestamp} blockTimestamp
+   */
   const proposeNewRound = (roundId, oracleAddr, blockTimestamp) => {
     if (!newRound(roundId)) return;
     const lastStarted = oracleStatuses.get(oracleAddr).lastStartedRound; // cache storage reads
@@ -445,10 +445,10 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} submission
- * @param {bigint} roundId
- * @param {string} oracleAddr
- */
+   * @param {bigint} submission
+   * @param {bigint} roundId
+   * @param {string} oracleAddr
+   */
   const recordSubmission = (submission, roundId, oracleAddr) => {
     acceptingSubmissions(roundId) || Fail`round not accepting submissions`;
 
@@ -477,9 +477,9 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- */
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   */
   const updateRoundAnswer = (roundId, blockTimestamp) => {
     if (
       details.get(roundId).submissions.length <
@@ -513,8 +513,8 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- */
+   * @param {bigint} roundId
+   */
   const deleteRoundDetails = roundId => {
     if (
       details.get(roundId).submissions.length <
@@ -525,22 +525,22 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- */
+   * @param {bigint} roundId
+   */
   const validRoundId = roundId => {
     return roundId <= ROUND_MAX;
   };
 
   /**
- */
+  */
   const oracleCount = () => {
     return oracleStatuses.getSize();
   };
 
   /**
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- */
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   */
   const supersedable = (roundId, blockTimestamp) => {
     return (
       rounds.has(roundId) &&
@@ -550,19 +550,19 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {bigint} roundId
- * @param {bigint} rrId reporting round ID
- */
+   * @param {bigint} roundId
+   * @param {bigint} rrId reporting round ID
+   */
   const previousAndCurrentUnanswered = (roundId, rrId) => {
     return add(roundId, 1) === rrId && rounds.get(rrId).updatedAt === 0n;
   };
 
   /**
- * @param {string} oracleAddr
- * @param {bigint} roundId
- * @param {Timestamp} blockTimestamp
- * @returns {string?} error message, if there is one
- */
+   * @param {string} oracleAddr
+   * @param {bigint} roundId
+   * @param {Timestamp} blockTimestamp
+   * @returns {string?} error message, if there is one
+   */
   const validateOracleRound = (oracleAddr, roundId, blockTimestamp) => {
     // cache storage reads
     const startingRound = oracleStatuses.get(oracleAddr).startingRound;
@@ -591,21 +591,21 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {string} oracleAddr
- * @param {bigint} roundId
- */
+   * @param {string} oracleAddr
+   * @param {bigint} roundId
+   */
   const delayed = (oracleAddr, roundId) => {
     const lastStarted = oracleStatuses.get(oracleAddr).lastStartedRound;
     return roundId > add(lastStarted, restartDelay) || lastStarted === 0n;
   };
 
   /**
- * a method to provide all current info oracleStatuses need. Intended only
- * only to be callable by oracleStatuses. Not for use by contracts to read state.
- *
- * @param {string} oracleAddr
- * @param {Timestamp} blockTimestamp
- */
+   * a method to provide all current info oracleStatuses need. Intended only
+   * only to be callable by oracleStatuses. Not for use by contracts to read state.
+   *
+   * @param {string} oracleAddr
+   * @param {Timestamp} blockTimestamp
+   */
   const oracleRoundStateSuggestRound = (oracleAddr, blockTimestamp) => {
     const oracle = oracleStatuses.get(oracleAddr);
 
@@ -655,10 +655,10 @@ const start = async (zcf, privateArgs) => {
   };
 
   /**
- * @param {string} oracleAddr
- * @param {bigint} queriedRoundId
- * @param {Timestamp} blockTimestamp
- */
+   * @param {string} oracleAddr
+   * @param {bigint} queriedRoundId
+   * @param {Timestamp} blockTimestamp
+   */
   const eligibleForSpecificRound = (
     oracleAddr,
     queriedRoundId,
@@ -692,25 +692,25 @@ const start = async (zcf, privateArgs) => {
 
   const creatorFacet = Far('PriceAggregatorChainlinkCreatorFacet', {
     /**
-   * An "oracle invitation" is an invitation to be able to submit data to
-   * include in the priceAggregator's results.
-   *
-   * The offer result from this invitation is a OracleAdmin, which can be used
-   * directly to manage the price submissions as well as to terminate the
-   * relationship.
-   *
-   * @param {string} oracleAddr Bech32 of oracle operator smart wallet
-   */
+     * An "oracle invitation" is an invitation to be able to submit data to
+     * include in the priceAggregator's results.
+     *
+     * The offer result from this invitation is a OracleAdmin, which can be used
+     * directly to manage the price submissions as well as to terminate the
+     * relationship.
+     *
+     * @param {string} oracleAddr Bech32 of oracle operator smart wallet
+     */
     makeOracleInvitation: async oracleAddr => {
       /**
-     * If custom arguments are supplied to the `zoe.offer` call, they can
-     * indicate an OraclePriceSubmission notifier and a corresponding
-     * `shiftValueOut` that should be adapted as part of the priceAuthority's
-     * reported data.
-     *
-     * @param {ZCFSeat} seat
-     * @returns {Promise<{admin: OracleAdmin<PriceRound>, invitationMakers: {makePushPriceInvitation: (result: PriceRound) => Promise<Invitation<void>>} }>}
-     */
+       * If custom arguments are supplied to the `zoe.offer` call, they can
+       * indicate an OraclePriceSubmission notifier and a corresponding
+       * `shiftValueOut` that should be adapted as part of the priceAuthority's
+       * reported data.
+       *
+       * @param {ZCFSeat} seat
+       * @returns {Promise<{admin: OracleAdmin<PriceRound>, invitationMakers: {makePushPriceInvitation: (result: PriceRound) => Promise<Invitation<void>>} }>}
+       */
       const offerHandler = async seat => {
         const admin = await creatorFacet.initOracle(oracleAddr);
         const invitationMakers = Far('invitation makers', {
@@ -740,8 +740,8 @@ const start = async (zcf, privateArgs) => {
 
     // unlike the median case, no query argument is passed, since polling behavior is undesired
     /**
-   * @param {string} oracleAddr uBech32 of oracle operator smart wallet
-   */
+     * @param {string} oracleAddr uBech32 of oracle operator smart wallet
+     */
     async initOracle(oracleAddr) {
       assert.typeof(oracleAddr, 'string');
 
@@ -759,10 +759,10 @@ const start = async (zcf, privateArgs) => {
 
       const oracleAdmin = Far('OracleAdmin', {
         /**
-       * push a unitPrice result from this oracle
-       *
-       * @param {PriceRound} result
-       */
+         * push a unitPrice result from this oracle
+         *
+         * @param {PriceRound} result
+         */
         async pushPrice({
         roundId: roundIdRaw = undefined,
         unitPrice: valueRaw,
@@ -811,13 +811,13 @@ const start = async (zcf, privateArgs) => {
     },
 
     /**
-   * consumers are encouraged to check
-   * that they're receiving fresh data by inspecting the updatedAt and
-   * answeredInRound return values.
-   *
-   * @param {bigint | number} roundIdRaw
-   * @returns {Promise<RoundData>}
-   */
+     * consumers are encouraged to check
+     * that they're receiving fresh data by inspecting the updatedAt and
+     * answeredInRound return values.
+     *
+     * @param {bigint | number} roundIdRaw
+     * @returns {Promise<RoundData>}
+     */
     async getRoundData(roundIdRaw) {
       const roundId = Nat(roundIdRaw);
 
@@ -837,12 +837,12 @@ const start = async (zcf, privateArgs) => {
     },
 
     /**
-   * a method to provide all current info oracleStatuses need. Intended only
-   * only to be callable by oracleStatuses. Not for use by contracts to read state.
-   *
-   * @param {string} oracleAddr Bech32 of oracle operator smart wallet
-   * @param {bigint} queriedRoundId
-   */
+     * a method to provide all current info oracleStatuses need. Intended only
+     * only to be callable by oracleStatuses. Not for use by contracts to read state.
+     *
+     * @param {string} oracleAddr Bech32 of oracle operator smart wallet
+     * @param {bigint} queriedRoundId
+     */
     async oracleRoundState(oracleAddr, queriedRoundId) {
       const blockTimestamp = await E(timer).getCurrentTimestamp();
       if (queriedRoundId > 0) {
